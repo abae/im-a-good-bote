@@ -49,8 +49,11 @@ async def on_message(message):
         #await messages[0].add_reaction('<:UpVote:507327220730167306>')
 
     if message.content == "karma count":
-        messages = await channel.history(limit=25000).flatten()
-        print('-----------')
+        #karma invented 10-13-2018
+        messageN = 50000
+        print('counting karma...')
+        messages = await channel.history(limit=messageN).flatten()
+        print('got messages...')
         karma = []
         for x in range(len(messages)):
             if (not messages[x].reactions) or (messages[x].author.bot):
@@ -76,11 +79,22 @@ async def on_message(message):
                                 break
                         if (not found):
                             karma.append([messages[x].author.display_name,0,messages[x].reactions[y].count,0])
-        karma = sorted(karma,key=itemgetter(3))
-        karmastr = ""
         for x in range(len(karma)):
             karma[x][3] = karma[x][1] - karma[x][2]
+        karma = sorted(karma,key=itemgetter(3), reverse=True)
+        karmastr = "Total karma count:\n"
+        for x in range(len(karma)):
+            if(x == 0):
+                karmastr += (f"🥇 ")
+            elif(x == 1):
+                karmastr += (f"🥈 ")
+            elif(x == 2):
+                karmastr += (f"🥉 ")
             karmastr += (f"{karma[x][0]} has {karma[x][1]} upvotes and {karma[x][2]} downvotes for a total karma of: {karma[x][3]} \n")
+            if(karma[x][2] > 0):
+                karmastr += (f"    (with a karma ratio of {karma[x][1]/karma[x][2]})\n")
+            else:
+                karmastr += ("    (with a perfectly clean record)\n")
         await channel.send(karmastr)
         print(f"{karma}")
         print('-----------')
