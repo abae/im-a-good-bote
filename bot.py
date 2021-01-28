@@ -2,10 +2,12 @@
 import discord
 import random
 from operator import itemgetter
+from os import environ
 
-file = open("TOKEN.txt", "r")
-if file.mode == 'r':
-    TOKEN = file.read()
+TOKEN = environ['TOKEN']
+#file = open("TOKEN.txt", "r")
+#if file.mode == 'r':
+#    TOKEN = file.read()
 
 client = discord.Client()
 
