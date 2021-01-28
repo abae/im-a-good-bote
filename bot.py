@@ -51,7 +51,7 @@ async def on_message(message):
     if message.content == "karma count":
         #karma invented 10-13-2018
         messageN = 50000
-        print('counting karma...')
+        print('getting messages...')
         messages = await channel.history(limit=messageN).flatten()
         print('got messages...')
         karma = []
@@ -119,6 +119,7 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for karma"))
     # for getting emoji list
     # print('Custom Emoji ID available:')
     # emojiList = client.emojis
