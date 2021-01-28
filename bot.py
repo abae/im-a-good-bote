@@ -4,12 +4,20 @@ import random
 from operator import itemgetter
 from os import environ
 
-TOKEN = environ['TOKEN']
-#file = open("TOKEN.txt", "r")
-#if file.mode == 'r':
-#    TOKEN = file.read()
+#TOKEN = environ['TOKEN']
+file = open("TOKEN.txt", "r")
+if file.mode == 'r':
+    TOKEN = file.read()
 
 client = discord.Client()
+
+def getArrayFile(fileName):
+    arrayFile = open(fileName, "r")
+    array = []
+    for line in arrayFile:
+        array.append(line.strip().split(','))
+    arrayFile.close()
+    return array
 
 @client.event
 async def on_message(message):
@@ -17,7 +25,39 @@ async def on_message(message):
         return
     channel = message.channel
     messages = await channel.history(limit=10).flatten()
+    
+#game-----------------------------------------------------------------------------------------------------------
+    if message.content == "!map":
+        world = getArrayFile("map.txt")
+        symbols = getArrayFile("symbols.txt")
+        units = getArrayFile("units.txt")
+        worldMessage = ":black_large_square: "
+        for i in range(len(world[0])):
+            worldMessage += symbols[0][i] + " "
+        worldMessage += "\n"
+        for i in range(len(world)):
+            worldMessage += symbols[1][i] + " "
+            for j in range(len(world[0])):
+                if world[i][j] == '0':
+                    if int(units[i][j]) == 0:
+                        worldMessage += ":white_large_square:"
+                    else:
+                        worldMessage += ":blue_square:"
+                if world[i][j] == '1':
+                    if int(units[i][j]) == 0:
+                        worldMessage += ":house_abandoned:"
+                    else:
+                        worldMessage += ":house:"
+                if world[i][j] == '2':
+                    if int(units[i][j]) == 0:
+                        worldMessage += ":city_dusk:"
+                    else:
+                        worldMessage += ":cityscape:"
+                worldMessage += " "
+            worldMessage += "\n"
+        await channel.send(worldMessage)
 
+#old------------------------------------------------------------------------------------------------------------
     if "heck" in message.content:
         await channel.send("hey! no hecks in here")
 
@@ -130,3 +170,5 @@ async def on_ready():
     # print('------')
 
 client.run(TOKEN)
+
+
