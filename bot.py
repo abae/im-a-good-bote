@@ -36,6 +36,10 @@ async def on_message(message):
         symbols = getArrayFile("symbols.txt")
         units = getArrayFile("units.txt")
         owner = getArrayFile("owner.txt")
+        players = getArrayFile("players.txt")
+        playerDict = {}
+        for i in range(len(players[0])):
+            playerDict[players[0][i]] = players[1][i]
         worldMessage = ":black_large_square: "
         for i in range(len(world[0])):
             worldMessage += symbols[0][i] + " "
@@ -47,7 +51,7 @@ async def on_message(message):
                     if int(units[i][j]) == 0:
                         worldMessage += ":white_large_square:"
                     else:
-                        worldMessage += ":blue_square:"
+                        worldMessage += playerDict[owner[i][j]]
                 if world[i][j] == '1':
                     if int(units[i][j]) == 0:
                         worldMessage += ":house_abandoned:"
@@ -75,10 +79,16 @@ async def on_message(message):
         symbols = getArrayFile("symbols.txt")
         units = getArrayFile("units.txt")
         owner = getArrayFile("owner.txt")
+        players = getArrayFile("players.txt")
+        playerDict = {}
+        for i in range(len(players[0])):
+            playerDict[players[0][i]] = players[1][i]
         args = message.content.strip().split(' ')
         error = False
         infoMessage = ""
         if len(args) != 2:
+            error = True
+        if args[0] != "!info":
             error = True
         if len(args[1]) != 2:
             error = True
@@ -93,7 +103,7 @@ async def on_message(message):
                 if units[locY][locX] == '0':
                     infoMessage += ":white_large_square: "+args[1]+": empty area"
                 else:
-                    infoMessage += args[1]+": "+owner[locY][locX]+"'s square with "+units[locY][locX]+" units"
+                    infoMessage += playerDict[owner[locY][locX]]+" "+args[1]+": "+owner[locY][locX]+"'s square with "+units[locY][locX]+" units"
             elif world[locY][locX] == '1':
                 infoMessage += "**"+names[locY][locX]+"**\n"
                 if units[locY][locX] == '0':
@@ -108,6 +118,42 @@ async def on_message(message):
                     infoMessage += ":cityscape: " + args[1]+": "+owner[locY][locX]+"'s capital with "+units[locY][locX]+" units"
         
         await channel.send(infoMessage)
+
+    if "!move" in message.content:
+        world = getArrayFile("map.txt")
+        names = getArrayFile("names.txt")
+        symbols = getArrayFile("symbols.txt")
+        units = getArrayFile("units.txt")
+        owner = getArrayFile("owner.txt")
+        players = getArrayFile("players.txt")
+        playerDict = {}
+        for i in range(len(players[0])):
+            playerDict[players[0][i]] = players[1][i]
+        args = message.content.strip().split(' ')
+        error = False
+        moveMessage = ""
+        if len(args) != 4:
+            error = True
+        if args[0] != "!move":
+            error = True
+        if len(args[2]) != 2 or len(args[3]) != 2:
+            error = True
+        locFrom = [ord(args[2][0])-65, ord(args[2][1])-49]
+        locTo = [ord(args[3][0])-65, ord(args[3][1])-49]
+        if int(arg[1]) < 1 or int(arg[1]) > units[locFrom[1]][locFrom[0]]:
+            error = True
+        if locFrom == locTo:
+            error = True
+        if locTo[0] > locFrom[0]+1 or locTo[0] < locFrom[0]-1:
+            error = True
+        if locTo[1] > locFrom[1]+1 or locTo[1] < locFrom[1]-1:
+            error = True
+        if owner[locFrom[1]][locFrom[0]] != message.author.mention:
+            error = True
+        if error:
+            await channel.send("movement error\n!move [# of units] [location from] [location to]\ntry !help for more info")
+        else:
+            await channel.send(moveMessage)
 
 #old------------------------------------------------------------------------------------------------------------
     if "heck" in message.content:

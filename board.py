@@ -9,6 +9,13 @@ def initArray(blankArray, worldx, worldy, char):
         blankArray.append(arrayTemp)
     return blankArray
 
+def getPlayer(fileName):
+    arrayFile = open(fileName, "r")
+    line = arrayFile.readline()
+    array = line.strip().split(',')
+    arrayFile.close()
+    return array
+
 def addEntry(x, y, entry, entryArray, name, nameArray):
     entryArray[x][y] = entry
     nameArray[x][y] = name
@@ -39,11 +46,14 @@ names = []
 names = initArray(names, worldx, worldy, '')
 owner = []
 owner = initArray(owner, worldx, worldy, '')
+players = getPlayer("players.txt")
 
 addEntry(2,1,'1',world,"Brittle Hollow",names)
 addEntry(4,8,'2',world,"Timber Hearth",names)
 addEntry(5,3,'1',world,"Giant's Deep",names)
 addEntry(8,8,'1',world,"Dark Bramble",names)
+addEntry(4,8,'5',units,players[0],owner)
+addEntry(5,5,'14',units,players[1],owner)
 
 textOutput(world, "map.txt")
 textOutput(units, "units.txt")
