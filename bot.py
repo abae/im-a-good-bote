@@ -57,6 +57,16 @@ async def on_message(message):
             worldMessage += "\n"
         await channel.send(worldMessage)
 
+    if message.content == "!gamehelp":
+        helpFile = open("help.txt", "r")
+        helpMessage = ""
+        for line in helpFile:
+            helpMessage += line
+        await channel.send(helpMessage)
+    
+    if message.content == "!info":
+        return
+
 #old------------------------------------------------------------------------------------------------------------
     if "heck" in message.content:
         await channel.send("hey! no hecks in here")

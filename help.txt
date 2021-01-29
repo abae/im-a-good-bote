@@ -1,0 +1,41 @@
+Andy's discord game explained:
+
+The pieces:
+:white_large_square: : empty space
+:blue_square: : space with player's units (color depending on player)
+:cityscape: : capital
+:city_dusk: : empty capital
+:house: : city
+:house_abandoned: : empty city
+
+Commands:
+!move [# of units] [location from] [location to]
+    moves (#of units) from one location to another (costs 1 unit if moving to empty SQUARE)
+    moves can only be a "king's move"
+    i.e. !move 2 B3 A4
+!transfer [# of units] [location from] [location to another player's city]
+    gives (#of units) to another player at a specified city under that player's control
+
+Info commands:
+!help
+    brings up a info page like this
+!info [location]
+    shows # of units on a non-empty space and who owns it
+!leaderboard
+    shows leaderboard of # of cities/capitals captured
+
+How to play:
+The game starts with 10 player units all on a capital space and empty cities placed evenly across the game board.
+
+A player can move whenever they want to but it will cost 1 unit if moving to an empty square (so if I have 5 units on C2 and I do "!move 3 C2 D2", then I'll end up with 2 units on C2 and 2 units on D2).
+
+If you move units on top of another player's units, that is considered an attack. During a attack, the defending side will have a defensive advantage (see below). After defensive advantage is calculated, each side of the attack will lose 1 unit each on that square until there is a victor.
+
+If a player has units on a capital or city, they have control of it. If a player has control of a city by 12PM, they will gain 3 more units on that city. For capitals, they will gain 5 more units.
+
+The first player to own 50% of capitals/cities on the board is the winner
+
+Defensive advantage:
+normal spaces: attacking units -10% of defensive units (rounding up)
+city: attacking units -20% of defensive units (rounding up)
+capital: attacking units -50% of defensive units (rounding up)
