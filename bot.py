@@ -4,6 +4,9 @@ import random
 from operator import itemgetter
 from os import environ
 
+worldx = 9
+worldy = 9
+
 #TOKEN = environ['TOKEN']
 file = open("TOKEN.txt", "r")
 if file.mode == 'r':
@@ -29,8 +32,10 @@ async def on_message(message):
 #game-----------------------------------------------------------------------------------------------------------
     if message.content == "!map":
         world = getArrayFile("map.txt")
+        names = getArrayFile("names.txt")
         symbols = getArrayFile("symbols.txt")
         units = getArrayFile("units.txt")
+        owner = getArrayFile("owner.txt")
         worldMessage = ":black_large_square: "
         for i in range(len(world[0])):
             worldMessage += symbols[0][i] + " "
@@ -64,8 +69,45 @@ async def on_message(message):
             helpMessage += line
         await channel.send(helpMessage)
     
-    if message.content == "!info":
-        return
+    if "!info" in message.content:
+        world = getArrayFile("map.txt")
+        names = getArrayFile("names.txt")
+        symbols = getArrayFile("symbols.txt")
+        units = getArrayFile("units.txt")
+        owner = getArrayFile("owner.txt")
+        args = message.content.strip().split(' ')
+        error = False
+        infoMessage = ""
+        if len(args) != 2:
+            error = True
+        if len(args[1]) != 2:
+            error = True
+        locX = ord(args[1][0]) - 65
+        locY = ord(args[1][1]) - 49
+        if locX < 0 or locX > worldx-1 or locY < 0 or locY > worldy-1:
+            error = True
+        if error:
+            await channel.send("error, invalid command\n!info [location]\ni.e. !info B3\ntry !help for more info")
+        else:
+            if world[locY][locX] == '0':
+                if units[locY][locX] == '0':
+                    infoMessage += ":white_large_square: "+args[1]+": empty area"
+                else:
+                    infoMessage += args[1]+": "+owner[locY][locX]+"'s square with "+units[locY][locX]+" units"
+            elif world[locY][locX] == '1':
+                infoMessage += "**"+names[locY][locX]+"**\n"
+                if units[locY][locX] == '0':
+                    infoMessage += ":house_abandoned: "+args[1]+": empty city"
+                else:
+                    infoMessage += ":house: " + args[1]+": "+owner[locY][locX]+"'s city with "+units[locY][locX]+" units"
+            elif world[locY][locX] == '2':
+                infoMessage += "**"+names[locY][locX]+"**\n"
+                if units[locY][locX] == '0':
+                    infoMessage += ":city_dusk: "+args[1]+": empty capital"
+                else:
+                    infoMessage += ":cityscape: " + args[1]+": "+owner[locY][locX]+"'s capital with "+units[locY][locX]+" units"
+        
+        await channel.send(infoMessage)
 
 #old------------------------------------------------------------------------------------------------------------
     if "heck" in message.content:
