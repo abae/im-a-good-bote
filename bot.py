@@ -9,10 +9,10 @@ from os import environ
 worldx = 13
 worldy = 13
 
-#TOKEN = environ['TOKEN']
-file = open("TOKEN.txt", "r")
-if file.mode == 'r':
-    TOKEN = file.read()
+TOKEN = environ['TOKEN']
+#file = open("TOKEN.txt", "r")
+#if file.mode == 'r':
+#    TOKEN = file.read()
 
 client = discord.Client()
 
