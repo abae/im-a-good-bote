@@ -254,8 +254,61 @@ async def on_message(message):
                     textOutput(units, "units.txt")
                     textOutput(owner, "owner.txt")
                     moveMessage += message.author.mention+" fought "+p_owner+" at "+args[3]+" and there was no clear victor.\n"+message.author.mention+" lost "+args[1]+" units and "+p_owner+" lost "+str(attackingUnits)+" units in the battle"
+    if "!transfer" in message.content:
+        world = getArrayFile("map.txt")
+        names = getArrayFile("names.txt")
+        symbols = getArrayFile("symbols.txt")
+        units = getArrayFile("units.txt")
+        owner = getArrayFile("owner.txt")
+        players = getArrayFile("players.txt")
+        playerDict = {}
+        for i in range(len(players[0])):
+            playerDict[players[0][i]] = players[1][i]
+        args = message.content.strip().split(' ')
+        error = False
+        transferMessage = ""
+        #correct number of arg
+        if len(args) != 4:
+            error = True
+        #correct command name
+        if args[0] != "!transfer":
+            error = True
+        #locations have 2 coord
+        if len(args[2]) != 2 or len(args[3]) != 2:
+            error = True
+        #location translation
+        locFrom = [ord(args[2][0])-65, ord(args[2][1])-49]
+        locTo = [ord(args[3][0])-65, ord(args[3][1])-49]
+        #make sure location is in map
+        if locFrom[0] < 0 or locFrom[0] > worldx-1 or locFrom[1] < 0 or locFrom[1] > worldy-1:
+            error = True
+        if locTo[0] < 0 or locTo[0] > worldx-1 or locTo[1] < 0 or locTo[1] > worldy-1:
+            error = True
+        #make sure there are enough units
+        if int(args[1]) < 1 or int(args[1]) > int(units[locFrom[1]][locFrom[0]]):
+            error = True
+        #make sure the message author owns the location
+        if owner[locFrom[1]][locFrom[0]] != message.author.mention:
+            error = True
+        #make sure sending to another player's city
+        if owner[locTo[1]][locTo[0]] == message.author.mention or owner[locTo[1]][locTo[0]] == '':
+            error = True
+        if world[locTo[1]][locTo[0]] != '2'
+            error = True
+        if error:
+            pass
+            #await channel.send("movement error\n!move [# of units] [location from] [location to]\ntry !help for more info")
+        else:
+            units[locTo[1]][locTo[0]] = str(int(units[locTo[1]][locTo[0]])+int(args[1]))
+            p_owner = owner[locTo[1]][locTo[0]]
+            units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+            if units[locFrom[1]][locFrom[0]] == '0':
+                owner[locFrom[1]][locFrom[0]] = ''
+            textOutput(units, "units.txt")
+            textOutput(owner, "owner.txt")
+            transferMessage += message.author.mention+" transferred "+args[1]+" units to "+p_owner+"'s capital at "+args[3]
 
-            await channel.send(moveMessage)
+            await channel.send(transferMessage)
 
 #old------------------------------------------------------------------------------------------------------------
     if "heck" in message.content:
