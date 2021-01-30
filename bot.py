@@ -43,8 +43,8 @@ def textOutput(array, fileName):
 #timer
 async def checkTime():
     await client.wait_until_ready()
-    channelID = 284408867444490259
-    #channelID = 804873337612271666
+    #channelID = 284408867444490259
+    channelID = 804873337612271666
     channel = client.get_channel(channelID)
     while True:
         world = getArrayFile("map.txt")
