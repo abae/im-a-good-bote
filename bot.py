@@ -6,8 +6,8 @@ import asyncio
 from operator import itemgetter
 from os import environ
 
-worldx = 9
-worldy = 9
+worldx = 13
+worldy = 13
 
 #TOKEN = environ['TOKEN']
 file = open("TOKEN.txt", "r")
@@ -85,11 +85,11 @@ async def on_message(message):
             worldMessage += symbols[0][i] + " "
         worldMessage += "\n"
         for i in range(len(world)):
-            worldMessage += symbols[1][i] + " "
+            worldMessage += symbols[0][i] + " "
             for j in range(len(world[0])):
                 if world[i][j] == '0':
                     if int(units[i][j]) == 0:
-                        worldMessage += ":white_large_square:"
+                        worldMessage += ":x:"
                     else:
                         worldMessage += playerDict[owner[i][j]]
                 if world[i][j] == '1':
@@ -133,7 +133,7 @@ async def on_message(message):
         if len(args[1]) != 2:
             error = True
         locX = ord(args[1][0]) - 65
-        locY = ord(args[1][1]) - 49
+        locY = ord(args[1][1]) - 65
         if locX < 0 or locX > worldx-1 or locY < 0 or locY > worldy-1:
             error = True
         if error:
@@ -186,8 +186,8 @@ async def on_message(message):
             error = True
             print("2 coords for each loc")
         #location translation
-        locFrom = [ord(args[2][0])-65, ord(args[2][1])-49]
-        locTo = [ord(args[3][0])-65, ord(args[3][1])-49]
+        locFrom = [ord(args[2][0])-65, ord(args[2][1])-65]
+        locTo = [ord(args[3][0])-65, ord(args[3][1])-65]
         #make sure location is in map
         if locFrom[0] < 0 or locFrom[0] > worldx-1 or locFrom[1] < 0 or locFrom[1] > worldy-1:
             error = True
@@ -309,8 +309,8 @@ async def on_message(message):
         if len(args[2]) != 2 or len(args[3]) != 2:
             error = True
         #location translation
-        locFrom = [ord(args[2][0])-65, ord(args[2][1])-49]
-        locTo = [ord(args[3][0])-65, ord(args[3][1])-49]
+        locFrom = [ord(args[2][0])-65, ord(args[2][1])-65]
+        locTo = [ord(args[3][0])-65, ord(args[3][1])-65]
         #make sure location is in map
         if locFrom[0] < 0 or locFrom[0] > worldx-1 or locFrom[1] < 0 or locFrom[1] > worldy-1:
             error = True

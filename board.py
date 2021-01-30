@@ -35,8 +35,8 @@ def textOutput(array, fileName):
 
 
 #make maps-------------------------------------------------------------------------
-worldx = 9
-worldy = 9
+worldx = 13
+worldy = 13
 
 world = []
 world = initArray(world, worldx, worldy, '0')
