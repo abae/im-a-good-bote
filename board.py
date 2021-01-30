@@ -16,11 +16,11 @@ def getPlayer(fileName):
     arrayFile.close()
     return array
 
-def addEntry(x, y, entry, entryArray, name, nameArray):
+def addEntry(x,y, entry, entryArray, name, nameArray):
     entryArray[x][y] = entry
     nameArray[x][y] = name
 
-def textOutput(array, filename):
+def textOutput(array, fileName):
     text = ""
     for i in range(len(array)):
         for j in range(len(array[0])):
@@ -28,7 +28,7 @@ def textOutput(array, filename):
             if j < len(array[0])-1:
                 text += ','
         text += '\n'
-    textFile = open(filename, "w")
+    textFile = open(fileName, "w")
     textFile.write(text)
     textFile.close()
 
@@ -52,7 +52,7 @@ addEntry(2,1,'1',world,"Brittle Hollow",names)
 addEntry(4,8,'2',world,"Timber Hearth",names)
 addEntry(5,3,'1',world,"Giant's Deep",names)
 addEntry(8,8,'1',world,"Dark Bramble",names)
-addEntry(4,8,'5',units,players[0],owner)
+addEntry(4,8,'99',units,players[0],owner)
 addEntry(5,5,'14',units,players[1],owner)
 
 textOutput(world, "map.txt")

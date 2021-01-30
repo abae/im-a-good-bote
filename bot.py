@@ -1,6 +1,7 @@
 # Work with Python 3.6
 import discord
 import random
+import math
 from operator import itemgetter
 from os import environ
 
@@ -21,6 +22,22 @@ def getArrayFile(fileName):
         array.append(line.strip().split(','))
     arrayFile.close()
     return array
+
+def addEntry(x, y, entry, entryArray, name, nameArray):
+    entryArray[x][y] = entry
+    nameArray[x][y] = name
+
+def textOutput(array, fileName):
+    text = ""
+    for i in range(len(array)):
+        for j in range(len(array[0])):
+            text += array[i][j]
+            if j < len(array[0])-1:
+                text += ','
+        text += '\n'
+    textFile = open(fileName, "w")
+    textFile.write(text)
+    textFile.close()
 
 @client.event
 async def on_message(message):
@@ -97,7 +114,8 @@ async def on_message(message):
         if locX < 0 or locX > worldx-1 or locY < 0 or locY > worldy-1:
             error = True
         if error:
-            await channel.send("error, invalid command\n!info [location]\ni.e. !info B3\ntry !help for more info")
+            pass
+            #await channel.send("error, invalid command\n!info [location]\ni.e. !info B3\ntry !help for more info")
         else:
             if world[locY][locX] == '0':
                 if units[locY][locX] == '0':
@@ -132,27 +150,111 @@ async def on_message(message):
         args = message.content.strip().split(' ')
         error = False
         moveMessage = ""
+        #correct number of arg
         if len(args) != 4:
             error = True
+        #correct command name
         if args[0] != "!move":
             error = True
+        #locations have 2 coord
         if len(args[2]) != 2 or len(args[3]) != 2:
             error = True
+        #location translation
         locFrom = [ord(args[2][0])-65, ord(args[2][1])-49]
         locTo = [ord(args[3][0])-65, ord(args[3][1])-49]
-        if int(arg[1]) < 1 or int(arg[1]) > units[locFrom[1]][locFrom[0]]:
+        #make sure location is in map
+        if locFrom[0] < 0 or locFrom[0] > worldx-1 or locFrom[1] < 0 or locFrom[1] > worldy-1:
             error = True
+        if locTo[0] < 0 or locTo[0] > worldx-1 or locTo[1] < 0 or locTo[1] > worldy-1:
+            error = True
+        #make sure there are enough units
+        if int(args[1]) < 1 or int(args[1]) > int(units[locFrom[1]][locFrom[0]]):
+            error = True
+        #make sure locations are 1 king's move away
         if locFrom == locTo:
             error = True
-        if locTo[0] > locFrom[0]+1 or locTo[0] < locFrom[0]-1:
+        if abs(locTo[0] - locFrom[0]) > 1:
             error = True
-        if locTo[1] > locFrom[1]+1 or locTo[1] < locFrom[1]-1:
+        if abs(locTo[1] - locFrom[1]) > 1:
             error = True
+        #make sure the message author owns the location
         if owner[locFrom[1]][locFrom[0]] != message.author.mention:
             error = True
         if error:
-            await channel.send("movement error\n!move [# of units] [location from] [location to]\ntry !help for more info")
+            pass
+            #await channel.send("movement error\n!move [# of units] [location from] [location to]\ntry !help for more info")
         else:
+            #moving to a new square
+            if units[locTo[1]][locTo[0]] == '0':
+                units[locTo[1]][locTo[0]] = str(int(args[1])-1)
+                if units[locTo[1]][locTo[0]] != '0':
+                    owner[locTo[1]][locTo[0]] = message.author.mention
+                units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+                if units[locFrom[1]][locFrom[0]] == '0':
+                    owner[locFrom[1]][locFrom[0]] = ''
+                textOutput(units, "units.txt")
+                textOutput(owner, "owner.txt")
+                moveMessage += message.author.mention+" took control of a new square at "+args[3]+" with "+str(int(args[1])-1)+" units."
+            #moving to a owned square
+            elif owner[locTo[1]][locTo[0]] == message.author.mention:
+                units[locTo[1]][locTo[0]] = str(int(units[locTo[1]][locTo[0]])+int(args[1]))
+                units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+                if units[locFrom[1]][locFrom[0]] == '0':
+                    owner[locFrom[1]][locFrom[0]] = ''
+                textOutput(units, "units.txt")
+                textOutput(owner, "owner.txt")
+                moveMessage += message.author.mention+" moved "+args[1]+ " units from "+args[2]+" to "+args[3]
+            #attack
+            else:
+                attackingUnits = int(args[1])
+                #defensive advantage
+                if world[locTo[1]][locTo[0]] == '0':
+                    attackingUnits -= int(math.ceil(int(units[locTo[1]][locTo[0]])*0.1))
+                elif world[locTo[1]][locTo[0]] == '1':
+                    attackingUnits -= int(math.ceil(int(units[locTo[1]][locTo[0]])*0.2))
+                else:
+                    attackingUnits -= int(math.ceil(int(units[locTo[1]][locTo[0]])*0.5))
+                #failed attack
+                if attackingUnits < 1:
+                    units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+                    if units[locFrom[1]][locFrom[0]] == '0':
+                        owner[locFrom[1]][locFrom[0]] = ''
+                    textOutput(units, "units.txt")
+                    textOutput(owner, "owner.txt")
+                    moveMessage += message.author.mention+" tried to attack "+owner[locTo[1]][locTo[0]]+" at "+args[3]+" and failed. They lost "+args[1]+" units in the process LULW"
+                #defense win
+                elif attackingUnits < int(units[locTo[1]][locTo[0]]):
+                    units[locTo[1]][locTo[0]] = str(int(units[locTo[1]][locTo[0]])-attackingUnits)
+                    units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+                    if units[locFrom[1]][locFrom[0]] == '0':
+                        owner[locFrom[1]][locFrom[0]] = ''
+                    textOutput(units, "units.txt")
+                    textOutput(owner, "owner.txt")
+                    moveMessage += owner[locTo[1]][locTo[0]]+" successfully defended against "+message.author.mention+"'s force of "+args[1]+" units, but also lost "+str(attackingUnits)+" units in the process."
+                #attack win
+                elif attackingUnits > int(units[locTo[1]][locTo[0]]):
+                    p_units = units[locTo[1]][locTo[0]]
+                    units[locTo[1]][locTo[0]] = str(attackingUnits - int(units[locTo[1]][locTo[0]]))
+                    p_owner = owner[locTo[1]][locTo[0]]
+                    owner[locTo[1]][locTo[0]] = message.author.mention
+                    units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+                    if units[locFrom[1]][locFrom[0]] == '0':
+                        owner[locFrom[1]][locFrom[0]] = ''
+                    textOutput(units, "units.txt")
+                    textOutput(owner, "owner.txt")
+                    moveMessage += message.author.mention+" took over "+args[3]+ " from "+p_owner+"\n"+message.author.mention+" lost "+str(int(args[1])-int(units[locTo[1]][locTo[0]]))+" units and "+p_owner+" lost "+p_units+" units in the battle"
+                #tie
+                elif attackingUnits == int(units[locTo[1]][locTo[0]]):
+                    units[locTo[1]][locTo[0]] = '0'
+                    p_owner = owner[locTo[1]][locTo[0]]
+                    owner[locTo[1]][locTo[0]] = ''
+                    units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
+                    if units[locFrom[1]][locFrom[0]] == '0':
+                        owner[locFrom[1]][locFrom[0]] = ''
+                    textOutput(units, "units.txt")
+                    textOutput(owner, "owner.txt")
+                    moveMessage += message.author.mention+" fought "+p_owner+" at "+args[3]+" and there was no clear victor.\n"+message.author.mention+" lost "+args[1]+" units and "+p_owner+" lost "+str(attackingUnits)+" units in the battle"
+
             await channel.send(moveMessage)
 
 #old------------------------------------------------------------------------------------------------------------
