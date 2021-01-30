@@ -2,6 +2,7 @@
 import discord
 import random
 import math
+import asyncio
 from operator import itemgetter
 from os import environ
 
@@ -38,6 +39,28 @@ def textOutput(array, fileName):
     textFile = open(fileName, "w")
     textFile.write(text)
     textFile.close()
+
+#timer
+async def checkTime():
+    await client.wait_until_ready()
+    channelID = 284408867444490259
+    #channelID = 804873337612271666
+    channel = client.get_channel(channelID)
+    while True:
+        world = getArrayFile("map.txt")
+        units = getArrayFile("units.txt")
+        for i in range(len(world)):
+            for j in range(len(world[0])):
+                if int(units[i][j]) > 0:
+                    if world[i][j] == '1':
+                        units[i][j] = str(int(units[i][j]) + 4)
+                    if world[i][j] == '2':
+                        units[i][j] = str(int(units[i][j]) + 8)
+        textOutput(units, "units.txt")
+
+        await channel.send("12:00 PM: New units have arrived at each city")
+        await asyncio.sleep(60*60*24)
+    
 
 @client.event
 async def on_message(message):
@@ -153,23 +176,29 @@ async def on_message(message):
         #correct number of arg
         if len(args) != 4:
             error = True
+            print("not enough args")
         #correct command name
         if args[0] != "!move":
             error = True
+            print("not right command")
         #locations have 2 coord
         if len(args[2]) != 2 or len(args[3]) != 2:
             error = True
+            print("2 coords for each loc")
         #location translation
         locFrom = [ord(args[2][0])-65, ord(args[2][1])-49]
         locTo = [ord(args[3][0])-65, ord(args[3][1])-49]
         #make sure location is in map
         if locFrom[0] < 0 or locFrom[0] > worldx-1 or locFrom[1] < 0 or locFrom[1] > worldy-1:
             error = True
+            print("out of map")
         if locTo[0] < 0 or locTo[0] > worldx-1 or locTo[1] < 0 or locTo[1] > worldy-1:
             error = True
+            print("out of range")
         #make sure there are enough units
-        if int(args[1]) < 1 or int(args[1]) > int(units[locFrom[1]][locFrom[0]]):
+        if int(args[1]) < 2 or int(args[1]) > int(units[locFrom[1]][locFrom[0]]):
             error = True
+            print("wrong number of units")
         #make sure locations are 1 king's move away
         if locFrom == locTo:
             error = True
@@ -180,13 +209,14 @@ async def on_message(message):
         #make sure the message author owns the location
         if owner[locFrom[1]][locFrom[0]] != message.author.mention:
             error = True
+            print("not right owner")
         if error:
             pass
             #await channel.send("movement error\n!move [# of units] [location from] [location to]\ntry !help for more info")
         else:
             #moving to a new square
             if units[locTo[1]][locTo[0]] == '0':
-                units[locTo[1]][locTo[0]] = str(int(args[1])-1)
+                units[locTo[1]][locTo[0]] = str(int(args[1])-2)
                 if units[locTo[1]][locTo[0]] != '0':
                     owner[locTo[1]][locTo[0]] = message.author.mention
                 units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
@@ -194,16 +224,16 @@ async def on_message(message):
                     owner[locFrom[1]][locFrom[0]] = ''
                 textOutput(units, "units.txt")
                 textOutput(owner, "owner.txt")
-                moveMessage += message.author.mention+" took control of a new square at "+args[3]+" with "+str(int(args[1])-1)+" units."
+                moveMessage += message.author.mention+" took control of a new square at "+args[3]+" with "+str(int(args[1])-2)+" units."
             #moving to a owned square
             elif owner[locTo[1]][locTo[0]] == message.author.mention:
-                units[locTo[1]][locTo[0]] = str(int(units[locTo[1]][locTo[0]])+int(args[1]))
+                units[locTo[1]][locTo[0]] = str(int(units[locTo[1]][locTo[0]])+int(args[1])-1)
                 units[locFrom[1]][locFrom[0]] = str(int(units[locFrom[1]][locFrom[0]])-int(args[1]))
                 if units[locFrom[1]][locFrom[0]] == '0':
                     owner[locFrom[1]][locFrom[0]] = ''
                 textOutput(units, "units.txt")
                 textOutput(owner, "owner.txt")
-                moveMessage += message.author.mention+" moved "+args[1]+ " units from "+args[2]+" to "+args[3]
+                moveMessage += message.author.mention+" moved "+str(int(args[1])-1)+ " units from "+args[2]+" to "+args[3]
             #attack
             else:
                 attackingUnits = int(args[1])
@@ -254,6 +284,8 @@ async def on_message(message):
                     textOutput(units, "units.txt")
                     textOutput(owner, "owner.txt")
                     moveMessage += message.author.mention+" fought "+p_owner+" at "+args[3]+" and there was no clear victor.\n"+message.author.mention+" lost "+args[1]+" units and "+p_owner+" lost "+str(attackingUnits)+" units in the battle"
+            await channel.send(moveMessage)
+
     if "!transfer" in message.content:
         world = getArrayFile("map.txt")
         names = getArrayFile("names.txt")
@@ -293,7 +325,7 @@ async def on_message(message):
         #make sure sending to another player's city
         if owner[locTo[1]][locTo[0]] == message.author.mention or owner[locTo[1]][locTo[0]] == '':
             error = True
-        if world[locTo[1]][locTo[0]] != '2'
+        if world[locTo[1]][locTo[0]] != '2':
             error = True
         if error:
             pass
@@ -309,6 +341,22 @@ async def on_message(message):
             transferMessage += message.author.mention+" transferred "+args[1]+" units to "+p_owner+"'s capital at "+args[3]
 
             await channel.send(transferMessage)
+    
+    if message.content == "!claim_victory":
+        world = getArrayFile("map.txt")
+        owner = getArrayFile("owner.txt")
+        claimed = 0
+        total = 0
+        for i in range(len(world)):
+            for j in range(len(world[0])):
+                if world[i][j] != '0':
+                    total += 1
+                    if owner[i][j] == message.author.mention:
+                        claimed += 1
+        if claimed > total/2:
+            await channel.send("Congratulations "+message.author.mention+" you are the winner!")
+        else:
+            await channel.send("Sorry, it doesn't seem like you've won yet...")
 
 #old------------------------------------------------------------------------------------------------------------
     if "heck" in message.content:
@@ -422,6 +470,7 @@ async def on_ready():
     #     print(emojiList[x])
     # print('------')
 
+client.loop.create_task(checkTime())
 client.run(TOKEN)
 
 

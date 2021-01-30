@@ -54,6 +54,7 @@ addEntry(5,3,'1',world,"Giant's Deep",names)
 addEntry(8,8,'1',world,"Dark Bramble",names)
 addEntry(4,8,'99',units,players[0],owner)
 addEntry(5,5,'14',units,players[1],owner)
+addEntry(5,5,'2',world,"Bot capital",names)
 
 textOutput(world, "map.txt")
 textOutput(units, "units.txt")

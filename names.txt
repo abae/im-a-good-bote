@@ -3,7 +3,7 @@
 ,Brittle Hollow,,,,,,,
 ,,,,,,,,
 ,,,,,,,,Timber Hearth
-,,,Giant's Deep,,,,,
+,,,Giant's Deep,,Bot capital,,,
 ,,,,,,,,
 ,,,,,,,,
 ,,,,,,,,Dark Bramble
