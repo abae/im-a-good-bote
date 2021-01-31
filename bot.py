@@ -3,6 +3,7 @@ import discord
 import random
 import math
 import asyncio
+import re
 from operator import itemgetter
 from os import environ
 
@@ -79,7 +80,7 @@ async def on_message(message):
         players = getArrayFile("players.txt")
         playerDict = {}
         for i in range(len(players[0])):
-            playerDict[players[0][i]] = players[1][i]
+            playerDict[re.sub("[^0-9]", "", players[0][i])] = players[1][i]
         worldMessage = ":black_large_square: "
         for i in range(len(world[0])):
             worldMessage += symbols[0][i] + " "
@@ -91,7 +92,7 @@ async def on_message(message):
                     if int(units[i][j]) == 0:
                         worldMessage += ":x:"
                     else:
-                        worldMessage += playerDict[owner[i][j]]
+                        worldMessage += playerDict[re.sub("[^0-9]", "", owner[i][j])]
                 if world[i][j] == '1':
                     if int(units[i][j]) == 0:
                         worldMessage += ":house_abandoned:"
@@ -122,7 +123,7 @@ async def on_message(message):
         players = getArrayFile("players.txt")
         playerDict = {}
         for i in range(len(players[0])):
-            playerDict[players[0][i]] = players[1][i]
+            playerDict[re.sub("[^0-9]", "", players[0][i])] = players[1][i]
         args = message.content.strip().split(' ')
         error = False
         infoMessage = ""
@@ -144,7 +145,7 @@ async def on_message(message):
                 if units[locY][locX] == '0':
                     infoMessage += ":white_large_square: "+args[1]+": empty area"
                 else:
-                    infoMessage += playerDict[owner[locY][locX]]+" "+args[1]+": "+owner[locY][locX]+"'s square with "+units[locY][locX]+" units"
+                    infoMessage += playerDict[re.sub("[^0-9]", "", owner[locY][locX])]+" "+args[1]+": "+owner[locY][locX]+"'s square with "+units[locY][locX]+" units"
             elif world[locY][locX] == '1':
                 infoMessage += "**"+names[locY][locX]+"**\n"
                 if units[locY][locX] == '0':
@@ -169,7 +170,7 @@ async def on_message(message):
         players = getArrayFile("players.txt")
         playerDict = {}
         for i in range(len(players[0])):
-            playerDict[players[0][i]] = players[1][i]
+            playerDict[re.sub("[^0-9]", "", players[0][i])] = players[1][i]
         args = message.content.strip().split(' ')
         error = False
         moveMessage = ""
@@ -207,9 +208,10 @@ async def on_message(message):
         if abs(locTo[1] - locFrom[1]) > 1:
             error = True
         #make sure the message author owns the location
-        if owner[locFrom[1]][locFrom[0]] != message.author.mention:
+        if re.sub("[^0-9]", "",owner[locFrom[1]][locFrom[0]]) != re.sub("[^0-9]", "",message.author.mention):
             error = True
             print("not right owner")
+            print(message.author.mention)
         if error:
             pass
             #await channel.send("movement error\n!move [# of units] [location from] [location to]\ntry !help for more info")
@@ -320,8 +322,9 @@ async def on_message(message):
         if int(args[1]) < 1 or int(args[1]) > int(units[locFrom[1]][locFrom[0]]):
             error = True
         #make sure the message author owns the location
-        if owner[locFrom[1]][locFrom[0]] != message.author.mention:
+        if re.sub("[^0-9]", "",owner[locFrom[1]][locFrom[0]]) != re.sub("[^0-9]", "",message.author.mention):
             error = True
+            print(message.author.mention)
         #make sure sending to another player's city
         if owner[locTo[1]][locTo[0]] == message.author.mention or owner[locTo[1]][locTo[0]] == '':
             error = True
